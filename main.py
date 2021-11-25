@@ -65,6 +65,21 @@ def linear_regression(candles, times):
     res = generate_candles(candles, yhat.tolist(), times)
     return res
 
+
+def interpolation(candles, times):
+    cnt = len(times)
+    prices = [candle.close for candle in candles]
+    k = len(prices)
+    x = [i for i in range(k)]
+    data = []
+
+    f = interpolate.interp1d(x, prices, fill_value="extrapolate")
+    for i in range(cnt):
+        data.append(f(k + i))
+    res = generate_candles(candles, data, times)
+    return res
+
+
 @dataclass
 class Candle:
     open: float
@@ -93,13 +108,16 @@ if __name__ == "__main__":
         times.append(datetime.datetime.fromtimestamp(float(line)))
         x1.append(float(line))
 
-    fig = plt.figure()
+    # fig = plt.figure()
     # plt.plot(x, y, color="blue")
 
     y1 = linear_extrapolation(candles, times)
     # plt.plot(x1, y1, color="red")
 
     y2 = linear_regression(candles, times)
-    # plt.plot(x1, y2, color="red")
+    # plt.plot(x1, y2, color="yellow")
+
+    y3 = interpolation(candles, times)
+    # plt.plot(x1, y3, color="green")
 
     # plt.show()
