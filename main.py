@@ -11,22 +11,16 @@ from math import inf
 
 def generate_candles(last_can, prices, times):
     candles, i, resolution = [], 0, last_can[0].resolution
-    min_open, max_open = inf, 0
-    min_high, max_high = inf, 0
-    min_low, max_low = inf, 0
-    for candle in last_can:
-        if candle.open < min_open: min_open = candle.open
-        if candle.high < min_high: min_high = candle.high
-        if candle.low < min_low: min_low = candle.low
+    oc_dif, hl_dif = 0, 0
 
-        if candle.open > max_open: max_open = candle.open
-        if candle.high > max_high: max_high = candle.high
-        if candle.low > max_low: max_low = candle.low
+    for candle in last_can:
+        if (candle.open - candle.close) > oc_dif: oc_dif = candle.open - candle.close
+        if (candle.high - candle.low) > hl_dif: hl_dif = candle.high - candle.low
 
     for price in prices:
-        open = random.uniform(min_open, max_open)
-        high = random.uniform(min_high, max_high)
-        low = random.uniform(min_low, max_low)
+        open = random.uniform(price - oc_dif/2, price + oc_dif/2)
+        high = random.uniform(price - hl_dif/2, price + hl_dif/2)
+        low = random.uniform(price - hl_dif/2, price + hl_dif/2)
         candle = Candle(open, price, high, low, times[i], resolution)
         candles.append(candle)
         i += 1
@@ -37,7 +31,7 @@ def generate_candles(last_can, prices, times):
 def linear_extrapolation(candles, times):
     cnt = len(times)
     prices = [candle.close for candle in candles]
-    time = [candle.date.timestamp() for candle in candles]
+    time = [x for x in range(len(candles))]
 
     l = len(prices)
     kol_of_prediction = cnt
@@ -94,14 +88,14 @@ class Candle:
 if __name__ == "__main__":
     candles, times = [], []
     file_candles = open('candles.txt', 'r')
-    x, y = [], []
+    x, ya = [], []
     for line in file_candles:
         l = line[:-1].split(' ')
         a = datetime.datetime.fromtimestamp(float(l[4]))
         candle = Candle(float(l[0]), float(l[1]), float(l[2]), float(l[3]), a, l[5])
         candles.append(candle)
         x.append(float(l[4]))
-        y.append(float(l[1]))
+        ya.append(float(l[1]))
 
     x1 = []
     file_times = open('times.txt', 'r')
@@ -110,15 +104,10 @@ if __name__ == "__main__":
         x1.append(float(line))
 
     fig = plt.figure()
-    plt.plot(x, y, color="blue")
+    # plt.plot(x, ya, color="blue")
 
     y1 = linear_extrapolation(candles, times)
-    # plt.plot(x1, y1, color="red")
 
     y2 = linear_regression(candles, times)
-    # plt.plot(x1, y2, color="yellow")
 
     y3 = interpolation(candles, times)
-    # plt.plot(x1, y3, color="green")
-
-    # plt.show()
