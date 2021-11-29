@@ -37,11 +37,11 @@ def generate_candles(last_can, prices, times):
 def linear_extrapolation(candles, times):
     cnt = len(times)
     prices = [candle.close for candle in candles]
-    k = len(prices)
+    time = [candle.date.timestamp() for candle in candles]
 
     l = len(prices)
     kol_of_prediction = cnt
-    x = pd.DataFrame(np.arange(0, k, 1))
+    x = pd.DataFrame(np.array(time))
     y = pd.DataFrame(np.array(prices))
 
     kol_of_rand = l
@@ -49,6 +49,7 @@ def linear_extrapolation(candles, times):
 
     extrapolator = interpolate.UnivariateSpline(x, y, k=1)
     y1 = extrapolator(x1)
+    # print(y1.tolist())
     res = generate_candles(candles, y1.tolist(), times)
     return res
 
@@ -108,8 +109,8 @@ if __name__ == "__main__":
         times.append(datetime.datetime.fromtimestamp(float(line)))
         x1.append(float(line))
 
-    # fig = plt.figure()
-    # plt.plot(x, y, color="blue")
+    fig = plt.figure()
+    plt.plot(x, y, color="blue")
 
     y1 = linear_extrapolation(candles, times)
     # plt.plot(x1, y1, color="red")
