@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import datetime
 import random
-from math import inf
 
 
 def generate_candles(last_can, prices, times):
